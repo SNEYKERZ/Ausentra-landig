@@ -1,0 +1,48 @@
+{
+  "plans": [
+    {
+      "id": 1,
+      "name": "Básico",
+      "duration_days": 30,
+      "price_cop": 99000,
+      "price_usd": 25,
+      "is_active": true,
+      "display_order": 1,
+      "description": "Perfecto para pequeñas empresas",
+      "discount_percentage": 0,
+      "original_price_cop": 99000,
+      "original_price_usd": 25
+    },
+    {
+      "id": 2,
+      "name": "Profesional",
+      "duration_days": 180,
+      "price_cop": 399000,
+      "price_usd": 99,
+      "is_active": true,
+      "display_order": 2,
+      "description": "Ideal para empresas en crecimiento",
+      "discount_percentage": 20,
+      "original_price_cop": 499000,
+      "original_price_usd": 125
+    },
+    {
+      "id": 3,
+      "name": "Empresarial",
+      "duration_days": 365,
+      "price_cop": 599000,
+      "price_usd": 149,
+      "is_active": true,
+      "display_order": 3,
+      "description": "Solución completa para grandes empresas",
+      "discount_percentage": 30,
+      "original_price_cop": 859000,
+      "original_price_usd": 215
+    }
+  ],
+  "currency": {
+    "default": "cop",
+    "supported": ["cop", "usd"]
+  },
+  "last_updated": "2026-04-06"
+}
