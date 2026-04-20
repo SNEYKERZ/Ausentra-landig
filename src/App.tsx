@@ -9,6 +9,7 @@ import { Contact } from "@/components/sections/contact";
 import { Footer } from "@/components/sections/footer";
 import { AdminLicenses } from "@/pages/AdminLicenses";
 import { AdminLogin } from "@/pages/AdminLogin";
+import { Tour } from "@/pages/Tour";
 import { usePlansStore } from "@/store/plans-store";
 import {
   fetchPlansFromAdmin,
@@ -103,6 +104,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/tour" element={<Tour />} />
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route
         path="/admin/licencias"

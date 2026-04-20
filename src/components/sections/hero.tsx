@@ -50,8 +50,8 @@ export function Hero() {
               Comenzar prueba gratuita
               <ArrowRight className="w-4 h-4" />
             </Button>
-            <Button size="lg" variant="outline">
-              Ver demo
+            <Button size="lg" variant="outline" asChild>
+              <a href="/tour">Ver demo</a>
             </Button>
           </motion.div>
 

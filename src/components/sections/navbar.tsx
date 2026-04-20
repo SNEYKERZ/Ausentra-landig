@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Características", href: "#features" },
+  { label: "Tour", href: "/tour" },
   { label: "Precios", href: "#pricing" },
   { label: "Contacto", href: "#contact" },
 ];
