@@ -4,8 +4,9 @@ import { Menu, X, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { label: "Producto", href: "#demos" },
   { label: "Características", href: "#features" },
-  { label: "Tour", href: "/tour" },
+  { label: "Gestión Humana", href: "#gestion-humana" },
   { label: "Precios", href: "#pricing" },
   { label: "Contacto", href: "#contact" },
 ];

@@ -16,7 +16,7 @@ export function Hero() {
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 text-sm font-medium mb-6">
               <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-              La gestión de ausencias más inteligente para empresas
+              La gestión de novedades más inteligente para empresas
             </span>
           </motion.div>
 
@@ -51,7 +51,7 @@ export function Hero() {
               <ArrowRight className="w-4 h-4" />
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href="/tour">Ver demo</a>
+              <a href="#demos">Explorar el producto</a>
             </Button>
           </motion.div>
 
