@@ -1,16 +1,132 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+/* ==========================================================================
+   Ausentra · landing
+   Misma familia visual que la app (admincalendar/resources/css/app.css):
+   acento índigo único, neutros tintados de índigo, estados semánticos
+   (aprobado / pendiente / rechazado) y Instrument Sans.
+   ========================================================================== */
+
+@theme {
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Índigo de marca (#4f5bd5 = 600) */
+  --color-brand-50: oklch(0.975 0.012 274);
+  --color-brand-100: oklch(0.955 0.025 274);
+  --color-brand-200: oklch(0.9 0.055 274);
+  --color-brand-300: oklch(0.82 0.095 274);
+  --color-brand-400: oklch(0.7 0.14 274);
+  --color-brand-500: oklch(0.6 0.17 274);
+  --color-brand-600: oklch(0.53 0.18 274);
+  --color-brand-700: oklch(0.46 0.17 274);
+  --color-brand-800: oklch(0.38 0.14 274);
+  --color-brand-900: oklch(0.3 0.1 274);
+  --color-brand-950: oklch(0.22 0.075 274);
+
+  /* Las vistas internas (admin, modal de pago) usan blue-*: se alinean a la marca */
+  --color-blue-50: var(--color-brand-50);
+  --color-blue-100: var(--color-brand-100);
+  --color-blue-200: var(--color-brand-200);
+  --color-blue-300: var(--color-brand-300);
+  --color-blue-400: var(--color-brand-400);
+  --color-blue-500: var(--color-brand-500);
+  --color-blue-600: var(--color-brand-600);
+  --color-blue-700: var(--color-brand-700);
+  --color-blue-800: var(--color-brand-800);
+  --color-blue-900: var(--color-brand-900);
+
+  /* Neutros tintados (fondos, texto, bordes) */
+  --color-ink: oklch(0.22 0.012 270);
+  --color-ink-soft: oklch(0.42 0.014 270);
+  --color-ink-mute: oklch(0.52 0.014 270);
+  --color-line: oklch(0.915 0.005 270);
+  --color-canvas: oklch(0.985 0.002 270);
+  --color-paper: oklch(0.965 0.004 270);
+
+  /* Tipos de ausencia (mockups) */
+  --color-vac: oklch(0.53 0.18 274);
+  --color-vac-soft: oklch(0.93 0.04 274);
+  --color-perm: oklch(0.6 0.14 60);
+  --color-perm-soft: oklch(0.95 0.05 80);
+  --color-lic: oklch(0.55 0.12 165);
+  --color-lic-soft: oklch(0.94 0.04 165);
+  --color-inc: oklch(0.58 0.18 15);
+  --color-inc-soft: oklch(0.95 0.03 15);
+
+  /* Estados */
+  --color-ok: oklch(0.52 0.12 160);
+  --color-ok-soft: oklch(0.96 0.03 160);
+  --color-wait: oklch(0.55 0.14 55);
+  --color-wait-soft: oklch(0.965 0.04 80);
+  --color-no: oklch(0.55 0.2 25);
+  --color-no-soft: oklch(0.96 0.022 20);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--color-brand-200);
+    color: var(--color-brand-950);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+  }
+
+  input,
+  textarea {
+    caret-color: var(--color-brand-600);
+  }
+
+  html {
+    scrollbar-color: var(--color-brand-300) transparent;
+  }
 }
 
-html {
-  scroll-behavior: smooth;
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

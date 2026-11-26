@@ -1,321 +1,230 @@
-import { motion } from "framer-motion";
-import { Play, ChevronLeft, ChevronRight, Calendar, Users, FileText, BarChart3, CheckCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Navbar } from "@/components/sections/navbar";
+import { Footer } from "@/components/sections/footer";
+import { CalendarMock } from "@/components/mockups/calendar-mock";
+import {
+  ApprovalMock,
+  CommunityMock,
+  DashboardMock,
+  DocumentsMock,
+  ReportsMock,
+} from "@/components/mockups/panels";
+import { cn } from "@/lib/utils";
 
-// Pasos del tour - cada uno representa un flujo del aplicativo
-const tourSteps = [
+type Step = {
+  id: string;
+  short: string;
+  title: string;
+  description: string;
+  points: string[];
+  mock: ReactNode;
+};
+
+const steps: Step[] = [
   {
-    id: 1,
-    title: "Panel del Empleado",
-    description: "El empleado puede visualizar sus días disponibles, solicitudes pendientes y historial de ausencias en un solo lugar.",
-    image: "/images/tour/panel-empleado.png",
-    icon: Users,
-    features: ["Días de vacaciones disponibles", "Historial de solicitudes", "Próximas ausencias confirmadas"],
+    id: "inicio",
+    short: "El inicio del día",
+    title: "Al entrar, el estado del equipo de un vistazo",
+    description:
+      "El inicio resume quién está fuera hoy, quién tiene una ausencia próxima, cuántas aprobaciones esperan y qué días de vacaciones están por vencer.",
+    points: [
+      "Ausentes de hoy, con tipo de ausencia y fecha de regreso",
+      "Vencimientos de vacaciones en los próximos 90 días",
+      "Aprobaciones pendientes asignadas a ti",
+    ],
+    mock: <DashboardMock sidebar />,
   },
   {
-    id: 2,
-    title: "Solicitud de Ausencia",
-    description: "El empleado selecciona el tipo de ausencia, fechas y adjunta la documentación necesaria.",
-    image: "/images/tour/solicitud-ausencia.png",
-    icon: FileText,
-    features: ["Tipos: Vacaciones, Permiso, Incapacidad", "Selección de fechas", "Adjunto de soportes"],
+    id: "registrar",
+    short: "Registrar una ausencia",
+    title: "Arrastra sobre los días y la ausencia queda registrada",
+    description:
+      "En el calendario del equipo seleccionas el rango de fechas, eliges el tipo de ausencia y la solicitud pasa a aprobación. Los festivos ya están marcados.",
+    points: [
+      "Tipos de ausencia configurables, cada uno con su color",
+      "Días hábiles calculados sin fines de semana ni festivos",
+      "Vista por equipo o por mes, con filtro por área",
+    ],
+    mock: <CalendarMock />,
   },
   {
-    id: 3,
-    title: "Aprobación de Solicitud",
-    description: "El gerente o RH recibe la solicitud, revisa los detalles y approves o rechazar con comentarios.",
-    image: "/images/tour/aprobacion-solicitud.png",
-    icon: CheckCircle,
-    features: ["Notificación en tiempo real", "Validación de días disponibles", "Comentarios opcionales"],
+    id: "aprobar",
+    short: "Aprobar o rechazar",
+    title: "Quien aprueba decide con toda la información",
+    description:
+      "La solicitud llega con fechas, días hábiles y el saldo que quedaría. Si el período está en bloqueo operacional, Ausentra lo advierte; al rechazar, el motivo queda registrado.",
+    points: [
+      "Aprobación en un clic",
+      "Bloqueos operacionales para fechas críticas",
+      "Motivo del rechazo visible para el colaborador",
+    ],
+    mock: <ApprovalMock />,
   },
   {
-    id: 4,
-    title: "Calendario Visual",
-    description: "Visualiza todo el equipo en un calendario interactivo. Identifica ausencias por área, tipo o colaborador.",
-    image: "/images/tour/calendario.png",
-    icon: Calendar,
-    views: ["Vista mensual", "Vista semanal", "Filtros por departamento"],
+    id: "equipo",
+    short: "Comunidad y documentos",
+    title: "El equipo sabe quién está y tiene sus documentos a mano",
+    description:
+      "La comunidad muestra la disponibilidad de cada persona hoy. En documentos, cada colaborador consulta, descarga y firma sus documentos laborales.",
+    points: [
+      "Directorio filtrable por área y disponibilidad",
+      "Documentos pendientes de firma, firmados y rechazados",
+      "Solicitudes a RR. HH., como certificados laborales",
+    ],
+    mock: (
+      <div className="grid gap-4 xl:grid-cols-2 [&>*]:min-w-0">
+        <CommunityMock />
+        <DocumentsMock />
+      </div>
+    ),
   },
   {
-    id: 5,
-    title: "Reportes y Estadísticas",
-    description: "Genera reportes detallados de ausencias por empleado, área o período. Ideal para RRHH.",
-    image: "/images/tour/reportes.png",
-    icon: BarChart3,
-    features: ["Exportar a Excel/PDF", "Gráficos de tendencias", "Análisis por período"],
+    id: "reportes",
+    short: "Reportes",
+    title: "Reportes por persona o por área, en CSV",
+    description:
+      "Elige el período y la agrupación, revisa los totales por tipo de ausencia y descárgalos para cruzarlos con nómina o presentarlos a gerencia.",
+    points: ["Agrupación por área o por persona", "Cualquier rango de fechas", "Exportación a CSV"],
+    mock: <ReportsMock />,
   },
 ];
 
-export function Tour() {
-  const [activeStep, setActiveStep] = useState(0);
-  const [isVideoMode, setIsVideoMode] = useState(false);
-
-  // Auto-advance en modo carrusel (opcional)
+function useActiveStep(ids: string[]) {
+  const [active, setActive] = useState(ids[0]);
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % tourSteps.length);
-    }, 8000);
-    return () => clearInterval(interval);
-  }, []);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActive(e.target.id);
+        });
+      },
+      { rootMargin: "-45% 0px -50% 0px" },
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [ids]);
+  return active;
+}
 
-  const nextStep = () => setActiveStep((activeStep + 1) % tourSteps.length);
-  const prevStep = () => setActiveStep((activeStep - 1 + tourSteps.length) % tourSteps.length);
+const STEP_IDS = steps.map((s) => s.id);
 
-  const currentStep = tourSteps[activeStep];
-  const IconComponent = currentStep.icon;
+export function Tour() {
+  const active = useActiveStep(STEP_IDS);
+  const reduce = useReducedMotion();
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */ }
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <a href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold text-slate-900">Ausentra</span>
-              </a>
-              <span className="text-slate-400">|</span>
-              <span className="text-slate-600">Tour Visual</span>
-            </div>
-            <a href="/" className="text-sm text-slate-500 hover:text-blue-600">
-              ← Volver al inicio
-            </a>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-canvas text-ink">
+      <Navbar />
 
-      {/* Hero del tour */ }
-      <section className="bg-white py-16 border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 text-sm font-medium mb-6">
-              <Play className="w-4 h-4" />
-              Descubre cómo funciona
-            </span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl md:text-5xl font-bold text-slate-900 mb-6"
-          >
-            Una forma inteligente de gestionar <span className="text-blue-600">las ausencias</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto"
-          >
-            Descubre en 5 pasos cómo Ausentra simplifica la gestión de vacaciones, permisos y licencias de tu equipo.
-          </motion.p>
-
-          {/* Toggle Video/Images */ }
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex items-center justify-center gap-4"
-          >
-            <button
-              onClick={() => setIsVideoMode(false)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                !isVideoMode ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
+      <main>
+        <section className="pb-16 pt-32 sm:pb-20 sm:pt-40">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <motion.h1
+              {...(reduce
+                ? {}
+                : {
+                    initial: { opacity: 0, y: 16 },
+                    animate: { opacity: 1, y: 0 },
+                    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+                  })}
+              className="max-w-4xl text-[2.5rem] font-semibold leading-[1.05] tracking-[-0.035em] sm:text-6xl"
             >
-              Ver Tour Visual
-            </button>
-            <button
-              onClick={() => setIsVideoMode(true)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isVideoMode ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              Ver Video Demo
-            </button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Contenido principal */ }
-      {isVideoMode ? (
-        /* Sección de Video */
-        <section className="py-16 bg-slate-900">
-          <div className="max-w-5xl mx-auto px-4">
-            <div className="aspect-video bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 cursor-pointer hover:bg-blue-700 transition-colors">
-                  <Play className="w-8 h-8 text-white ml-1" />
-                </div>
-                <p className="text-slate-400">
-                  Video demo en proceso de grabación
-                </p>
-                <p className="text-slate-500 text-sm mt-2">
-                  Mientras, explorá el tour visual ↓
-                </p>
-              </div>
-            </div>
+              Un recorrido por Ausentra, de la solicitud al reporte.
+            </motion.h1>
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
+              Cinco pantallas que muestran cómo se registra, aprueba y consulta una ausencia.
+              Las vistas usan datos de ejemplo.
+            </p>
           </div>
         </section>
-      ) : (
-        /* Tour Visual - Carrusel */
-        <section className="py-16">
-          <div className="max-w-6xl mx-auto px-4">
-            {/* Indicadores de progreso */ }
-            <div className="flex items-center justify-center gap-2 mb-8">
-              {tourSteps.map((step, index) => (
-                <button
-                  key={step.id}
-                  onClick={() => setActiveStep(index)}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    index === activeStep
-                      ? "bg-blue-600 w-8"
-                      : "bg-slate-300 hover:bg-slate-400"
-                  }`}
-                  aria-label={`Ir a ${step.title}`}
-                />
+
+        <section className="border-t border-line">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:grid lg:grid-cols-[13rem_1fr] lg:gap-16">
+            <nav aria-label="Pasos del recorrido" className="hidden lg:block">
+              <ol className="sticky top-28 space-y-1 py-16">
+                {steps.map((s, i) => (
+                  <li key={s.id}>
+                    <a
+                      href={`#${s.id}`}
+                      aria-current={active === s.id ? "step" : undefined}
+                      className={cn(
+                        "flex items-baseline gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                        active === s.id
+                          ? "bg-brand-100 font-semibold text-brand-800"
+                          : "text-ink-soft hover:text-ink",
+                      )}
+                    >
+                      <span className="tabular text-xs text-ink-mute">{i + 1}</span>
+                      {s.short}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+
+            <div className="min-w-0 divide-y divide-line">
+              {steps.map((s, i) => (
+                <article key={s.id} id={s.id} className="scroll-mt-24 py-16 sm:py-20">
+                  <p className="tabular text-sm font-medium text-brand-700">
+                    Paso {i + 1} de {steps.length}
+                  </p>
+                  <h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight tracking-[-0.025em] sm:text-4xl">
+                    {s.title}
+                  </h2>
+                  <p className="mt-4 max-w-2xl text-[1.0625rem] leading-relaxed text-ink-soft">
+                    {s.description}
+                  </p>
+                  <ul className="mt-6 grid gap-x-8 gap-y-2.5 sm:grid-cols-3">
+                    {s.points.map((p) => (
+                      <li key={p} className="flex gap-2.5 text-sm text-ink-soft">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-10">{s.mock}</div>
+                </article>
               ))}
             </div>
+          </div>
+        </section>
 
-            {/* Contenido del paso actual */ }
-            <div className="grid lg:grid-cols-2 gap-8 items-center">
-              {/* Imagen/Screenshot */ }
-              <motion.div
-                key={activeStep}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4 }}
-                className="relative"
+        <section className="bg-brand-600 py-20 text-white sm:py-24">
+          <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl font-semibold leading-tight tracking-[-0.025em] sm:text-4xl">
+                ¿Listo para tener las ausencias de tu equipo bajo control?
+              </h2>
+              <p className="mt-4 text-lg text-brand-100">
+                Elige un plan o escríbenos y te ayudamos a decidir.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" variant="inverse">
+                <a href="/#precios">
+                  Ver planes y precios
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </a>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                className="bg-brand-700 shadow-none ring-1 ring-inset ring-white/25 hover:bg-brand-800"
               >
-                <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-                  {/* Browser chrome simulado */ }
-                  <div className="bg-slate-100 px-4 py-3 flex items-center gap-2 border-b border-slate-200">
-                    <div className="w-3 h-3 rounded-full bg-red-400" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                    <div className="w-3 h-3 rounded-full bg-green-400" />
-                    <span className="ml-4 text-sm text-slate-500">Ausentra - {currentStep.title}</span>
-                  </div>
-                  
-                  {/* Placeholder de imagen - luego reemplazar con screenshot real */ }
-                  <div className="p-8 bg-slate-50 min-h-[400px] flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <IconComponent className="w-8 h-8 text-blue-600" />
-                      </div>
-                      <p className="text-slate-600 font-medium">
-                        {currentStep.title}
-                      </p>
-                      <p className="text-slate-400 text-sm mt-2">
-                        Screenshot en proceso
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Navegación lateral */ }
-                <button
-                  onClick={prevStep}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 transition-colors"
-                  aria-label="Anterior"
-                >
-                  <ChevronLeft className="w-5 h-5 text-slate-600" />
-                </button>
-                <button
-                  onClick={nextStep}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 transition-colors"
-                  aria-label="Siguiente"
-                >
-                  <ChevronRight className="w-5 h-5 text-slate-600" />
-                </button>
-              </motion.div>
-
-              {/* Descripción */ }
-              <motion.div
-                key={`desc-${activeStep}`}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <IconComponent className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <span className="text-blue-600 font-medium">
-                    Paso {currentStep.id} de {tourSteps.length}
-                  </span>
-                </div>
-
-                <h2 className="text-3xl font-bold text-slate-900">
-                  {currentStep.title}
-                </h2>
-
-                <p className="text-lg text-slate-600">
-                  {currentStep.description}
-                </p>
-
-                {/* Lista de features */ }
-                <ul className="space-y-3">
-                  {(currentStep.features || currentStep.views || []).map((item: string, index: number) => (
-                    <li key={index} className="flex items-center gap-3">
-                      <div className="w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-3 h-3 text-emerald-600" />
-                      </div>
-                      <span className="text-slate-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Indicador de siguiente */ }
-                <div className="pt-4 flex items-center gap-2 text-sm text-slate-500">
-                  <span>Siguiente:</span>
-                  <span className="font-medium text-slate-700">
-                    {tourSteps[(activeStep + 1) % tourSteps.length].title}
-                  </span>
-                  <ChevronRight className="w-4 h-4" />
-                </div>
-              </motion.div>
+                <a href="/#contacto">Hablar con ventas</a>
+              </Button>
             </div>
           </div>
         </section>
-      )}
+      </main>
 
-      {/* CTA Final */ }
-      <section className="py-16 bg-white border-t border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-slate-900 mb-4">
-            ¿Listo para simplificar la gestión de ausencias?
-          </h2>
-          <p className="text-lg text-slate-600 mb-8">
-            Comenzá tu prueba gratuita de 14 días. No requiere tarjeta.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg">
-              Comenzar prueba gratuita
-            </Button>
-            <Button size="lg" variant="outline">
-              Contactar ventas
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer simple */ }
-      <footer className="bg-slate-50 py-8 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-slate-500">
-          <p>© 2024 Ausentra. Todos los derechos reservados.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
