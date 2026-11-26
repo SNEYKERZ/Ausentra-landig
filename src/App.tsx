@@ -2,7 +2,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/sections/navbar";
 import { Hero } from "@/components/sections/hero";
+import { DemoShowcase } from "@/components/sections/demo-showcase";
 import { Features } from "@/components/sections/features";
+import { HumanManagement } from "@/components/sections/human-management";
 import { Pricing } from "@/components/sections/pricing";
 import { PaymentModal } from "@/components/sections/payment-modal";
 import { Contact } from "@/components/sections/contact";
@@ -84,7 +86,9 @@ function LandingPage() {
       <Navbar />
       <main>
         <Hero />
+        <DemoShowcase />
         <Features />
+        <HumanManagement />
         <Pricing plans={plans} onSelectPlan={handleSelectPlan} />
         <Contact />
       </main>
